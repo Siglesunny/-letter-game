@@ -5,4 +5,4 @@
 <hr>
 <a href="https://siglesunny.github.io/letterGame/nake.html">贪吃蛇游戏</a>
 <hr>
-<a href="https://siglesunny.github.io/letterGame/draw.html">贪吃蛇游戏</a>
+<a href="https://siglesunny.github.io/letterGame/draw.html">画板</a>
