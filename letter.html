@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+	<head>
+		<meta charset="UTF-8">
+		<title>字母掉落</title>
+		<style>
+			#wrap {
+				width: 800px;
+				height: 700px;
+				position: relative;
+				background: black;
+				margin: 100px auto;
+				color: white;
+			}
+			#timing {
+				width: 180px;
+				height: 14px;
+				border-radius: 7px;
+				background: gold;
+				display: inline-block;
+				position: absolute;
+			}
+			
+			#start,
+			#score
+			 {
+				width: 100px;
+				height: 30px;
+				line-height: 30px;
+				padding: 10px;
+				border: 1px solid lightgray;
+				background: yellowgreen;
+				color: white;
+				text-align: center;
+				display: inline-block;
+				cursor: pointer;
+			}
+			
+			#start{
+				position: absolute;
+				right: 345px;
+				top: 345px;
+			}
+			#over {
+				line-height: 30px;
+				border: 1px solid lightgray;
+				background: yellowgreen;
+				position: absolute;
+				right: 300px;
+				top: 345px;
+				padding: 0 50px;
+			}
+			
+			#over {
+				display: none;
+			}
+			
+			#score {
+				position: absolute;
+				right: 0px;
+				top: 0;
+			}
+			
+			#letters {
+				position: relative;
+			}
+			
+			.letter {
+				position: absolute;
+				font: bold 50px "Arial";
+			}
+			
+			#box {
+				width: 180px;
+				height: 14px;
+				border: 1px solid orange;
+				box-shadow: 0 0 10px 5px orange;
+				position: absolute;
+				left: 60px;
+				top: 5px;
+				border-radius: 7px;
+				margin: 0 auto;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="wrap">
+
+			<div>倒计时:
+				<div id="box">
+					<span id="timing"></span>
+				</div>
+			</div>
+
+			<div id="start">开始</div>
+			<div id="score">得分:0</div>
+			<div id="over">
+				<p>游戏结束</p>
+				<p id="again">重新开始</p>
+			</div>
+			<div id="letters"></div>
+		</div>
+
+	</body>
+	<script>
+		//获取元素
+		var wrap = document.getElementById('wrap');
+		var timingDiv = document.getElementById('timing');
+		var start = document.getElementById('start');
+		var scoreDiv = document.getElementById('score');
+		var letters = document.getElementById('letters');
+		var over = document.getElementById('over');
+		var again = document.getElementById('again');
+		var score = 0;
+		var allLetter;
+		start.onclick = function() {
+			start.style.display = 'none';
+			timingChangeFn();
+			creatletterByTime();
+			removLetter();
+			letters.style.display='block';
+		}
+
+		function randomNum(x, y) {
+			return Math.round(Math.random() * (y - x) + x);
+		}
+		//字母数组
+		function bigLetter() {
+			arr = [];
+			for(var i = 65; i < 91; i++) {
+				arr.push(String.fromCharCode(i));
+			}
+			return arr;
+		}
+		bigLetter();
+		//下落的字母
+		function letter() {
+			var index = randomNum(0, 25); //随机字母下标位置
+			var ranLetter = arr[index]; //随机字母
+			var ranSpeed = randomNum(10, 30); //随机速度
+			var leftP = randomNum(10, 700); //设置位置在100-1000之间
+			//console.log(leftP);
+			var topP = 50;
+			var letDiv = document.createElement('div');
+			letDiv.className = "letter";
+			letDiv.style.top = topP + "px";
+			letDiv.style.left = leftP + "px";
+			letDiv.style.color = 'rgb(' + randomNum(1, 255) + ',' + randomNum(0, 255) + ',' + randomNum(0, 255) + ')';
+			letDiv.innerHTML = ranLetter;
+			letters.appendChild(letDiv);
+			console.log(allLetter);
+			letDiv.downTimer = setInterval(function() {
+				letDiv.style.top = letDiv.offsetTop + ranSpeed + 'px';
+				if(letDiv.offsetTop >= wrap.offsetHeight - letDiv.offsetHeight - 20) {
+					clearInterval(letDiv.downTimer);
+					letDiv.remove();
+				}
+			}, 100);
+		}
+		var creatletterTimer;
+
+		function creatletterByTime() {
+			creatletterTimer = setInterval(function() {
+				letter();
+			}, 500)
+		}
+		//键盘消除字母
+		function removLetter() {
+			allLetter = letters.children;
+			document.onkeydown = function() {
+				var e = event || window.event;
+				var keychar = String.fromCharCode(e.keyCode); //将按下的大写字母键盘转换成大写字母
+				console.log(keychar);
+				console.log(score);
+				for(var i = 0; i < allLetter.length; i++) {
+					if(keychar == allLetter[i].innerHTML) {
+						score++;
+						scoreDiv.innerHTML = '得分：' + score;
+						letters.removeChild(allLetter[i]);
+					}
+
+				}
+
+			}
+		}
+
+		//倒计时函数
+		function timingChangeFn() {
+			var num = 180;
+			var timer = setInterval(function() {
+				num -= 5;
+				timingDiv.style.width = num + 'px';
+				if(num <= 0) {
+					clearInterval(timer);
+					clearInterval(creatletterTimer);
+					document.onkeydown = null;
+					letters.style.display='none';
+					over.style.display='block';
+				}
+			}, 1000);
+		}
+		again.onclick=function(){
+			start.style.display='block';
+			over.style.display='none';
+			score=0;
+			scoreDiv.innerHTML='得分：'+0;
+		}
+	</script>
+
+</html>
