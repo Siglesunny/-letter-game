@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>画板</title>
+		<style>
+			.wrap {
+				min-width: 1200px;
+				cursor: pointer;
+			}
+			
+			.wrap::after {
+				content: "";
+				display: block;
+				clear: both;
+			}
+			
+			.box {
+				height: 590px;
+				display: inline-block;
+				border: 5px solid lightgrey;
+				float: left;
+				text-align: center;
+			}
+			
+			.tool,.tool1,
+			.lineBox,
+			.colorBox {
+				width: 100px;
+				height: 50px;
+				line-height: 50px;
+				/*text-align: center;*/
+				background: lightgreen;
+				border-radius: 30px;
+				margin: 10px;
+				display: block;
+				outline: none;
+				font-size: 15px;
+			}
+			
+			span {
+				vertical-align: middle;
+			}
+			
+			input {
+				width: 30px;
+				text-align: center;
+				border: none;
+				outline: none;
+				vertical-align: middle;
+			}
+			.type{
+				width:50px;
+				height:30px;
+				background: skyblue;
+				outline: none;
+			}
+			
+			#myCanvas {
+				background: #eee;
+				box-shadow: 0 0 20px #EEEEEE;
+				float: left;
+				display: block;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="wrap">
+			<div class="box">
+				<h2>工具栏</h2>
+				<button class="tool">曲线</button>
+				<button class="tool">直线</button>
+				<button class="tool">圆</button>
+				<button class="tool">矩形</button>
+				<button class="tool">橡皮擦</button>
+				<button class="tool1">清除</button>
+				<div class="colorBox">
+					<span>颜色</span>
+					<input type="color" id="color" />
+				</div>
+				<div class="lineBox">
+					<span>线宽</span>
+					<input type="number" id="line" value="1" max="150" min="1">
+				</div>
+				<button class="type">描边</button>
+				<button class="type">填充</button>
+			</div>
+			<canvas id="myCanvas" width="800" height="600">
+			您的版本太低,请您升级你的版本
+			</canvas>
+		</div>
+	</body>
+	<script type="text/javascript">
+		var mc = document.getElementById('myCanvas'); //画板
+		var ctx = mc.getContext('2d'); //画笔
+		var drawTools = document.getElementsByClassName('tool');
+		var type = document.getElementsByClassName('type');
+		var clear = document.querySelector('.tool1');
+		var color = document.getElementById('color')
+		var line = document.getElementById('line');
+		var drawcolor = 'black';
+		var lineWidth = '1';
+		var startX, startY;
+		var endX, endY;
+		var endX1, endY1;
+		var flag;
+		var drawType = 'drawLine';
+		drawTools[0].drawType = 'drawLine';
+		drawTools[1].drawType = 'drawStrline';
+		drawTools[2].drawType = 'drawCircle';
+		drawTools[3].drawType = 'drawRect';
+		drawTools[4].drawType = 'rubber';
+		for(var i = 0; i < drawTools.length; i++) {
+			drawTools[i].onclick = function() {
+				for(var i = 0; i < drawTools.length; i++) {
+					drawTools[i].style.background = 'lightgreen';
+				}
+				drawType = this.drawType;
+				this.style.background = 'pink';
+			}
+		}
+		clear.onclick = function() {
+			ctx.clearRect(0, 0, 800, 600);
+		}
+		color.onchange = function() {
+			drawcolor = this.value;
+			console.log(drawcolor);
+		}
+		line.onchange = function() {
+			lineWidth = this.value;
+			console.log(lineWidth);
+		}
+		
+		type[0].onclick=function(){
+			flag=0;
+			this.style.background = 'orange';
+			type[1].style.background = 'skyblue';
+		}
+		type[1].onclick=function(){
+			flag=1;
+			this.style.background = 'orange';
+			type[0].style.background = 'skyblue';
+		}
+		myCanvas.onmousedown = function() {
+			//计算出鼠标基于canvas的坐标位置
+			var e = event || window.event;
+			startX = e.clientX - myCanvas.offsetLeft;
+			startY = e.clientY - myCanvas.offsetTop;
+			//开启一条路径，并且设置第一个点
+			ctx.beginPath();
+			ctx.moveTo(startX, startY);
+			mc.onmousemove = function() {
+				var e = event || window.event;
+				endX = e.clientX - mc.offsetLeft;
+				endY = e.clientY - mc.offsetTop;
+				//绘制
+				switch(drawType) {
+					case 'drawLine':
+						drawLine();
+						break;
+					case 'rubber':
+						rubber();
+						break;
+				}
+			}
+		}
+		mc.onmouseup = function() {
+			var e1 = event || window.event;
+			endX1 = e1.clientX - mc.offsetLeft;
+			endY1 = e1.clientY - mc.offsetTop;
+			switch(drawType) {
+				case 'drawStrline':
+					drawStrline();
+					break;
+				case 'drawCircle':
+					drawCircle();
+					break;
+				case 'drawRect':
+					drawRect();
+					break;
+			}
+			mc.onmousemove = null;
+		}
+		//自由画线
+		function drawLine() {
+			ctx.lineTo(endX, endY);
+			ctx.strokeStyle = drawcolor;
+			ctx.lineWidth = lineWidth;
+			ctx.stroke();
+			ctx.restore()
+		}
+		//画直线
+		function drawStrline() {
+			ctx.beginPath()
+			ctx.moveTo(startX, startY);
+			ctx.lineTo(endX1, endY1);
+			ctx.strokeStyle = drawcolor;
+			ctx.lineWidth = lineWidth;
+			ctx.stroke();
+		}
+		//画圆
+		function drawCircle() {
+			ctx.beginPath();
+			//计算圆心的位置
+			var ox = (endX - startX) / 2 + startX;
+			var oy = (endY - startY) / 2 + startY;
+			//计算半径
+			var r = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)) / 2;
+			ctx.arc(ox, oy, r, 0, 2 * Math.PI);
+			
+			if(flag==1){
+				ctx.fillStyle = drawcolor;
+				ctx.fill();
+			}else{
+				ctx.strokeStyle = drawcolor;
+				ctx.stroke();
+			}	
+		}
+		//画矩形
+		function drawRect() {
+			if(flag==1){
+				ctx.fillRect(startX, startY, endX - startX, endY - startY);
+				ctx.fillStyle = drawcolor;
+				ctx.fill();
+			}else{
+				ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+				ctx.strokeStyle = drawcolor;
+				ctx.lineWidth=lineWidth;
+				ctx.stroke();
+			}
+		}
+		//橡皮擦
+		function rubber() {
+			ctx.clearRect(endX-5, endY-5, 10, 10);
+			ctx.lineCap='round';
+		}
+	</script>
+
+</html>
