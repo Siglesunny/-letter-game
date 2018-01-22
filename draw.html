@@ -6,7 +6,8 @@
 		<title>画板</title>
 		<style>
 			.wrap {
-				min-width: 1200px;
+				width:930px;
+				margin:0 auto;
 				cursor: pointer;
 			}
 			
@@ -38,7 +39,9 @@
 				outline: none;
 				font-size: 15px;
 			}
-			
+			.a1{
+				background: pink;
+			}
 			span {
 				vertical-align: middle;
 			}
@@ -56,13 +59,17 @@
 				background: skyblue;
 				outline: none;
 			}
-			
+			.a2{
+				background: orange;
+			}
 			#myCanvas {
 				background: #eee;
 				box-shadow: 0 0 20px #EEEEEE;
-				float: left;
+				float: right;
 				display: block;
 			}
+			
+			
 		</style>
 	</head>
 
@@ -70,7 +77,7 @@
 		<div class="wrap">
 			<div class="box">
 				<h2>工具栏</h2>
-				<button class="tool">曲线</button>
+				<button class="tool a1">曲线</button>
 				<button class="tool">直线</button>
 				<button class="tool">圆</button>
 				<button class="tool">矩形</button>
@@ -84,7 +91,7 @@
 					<span>线宽</span>
 					<input type="number" id="line" value="1" max="150" min="1">
 				</div>
-				<button class="type">描边</button>
+				<button class="type a2">描边</button>
 				<button class="type">填充</button>
 			</div>
 			<canvas id="myCanvas" width="800" height="600">
@@ -144,12 +151,11 @@
 			type[0].style.background = 'skyblue';
 		}
 		myCanvas.onmousedown = function() {
+			ctx.beginPath();
 			//计算出鼠标基于canvas的坐标位置
 			var e = event || window.event;
 			startX = e.clientX - myCanvas.offsetLeft;
 			startY = e.clientY - myCanvas.offsetTop;
-			//开启一条路径，并且设置第一个点
-			ctx.beginPath();
 			ctx.moveTo(startX, startY);
 			mc.onmousemove = function() {
 				var e = event || window.event;
@@ -189,7 +195,6 @@
 			ctx.strokeStyle = drawcolor;
 			ctx.lineWidth = lineWidth;
 			ctx.stroke();
-			ctx.restore()
 		}
 		//画直线
 		function drawStrline() {
@@ -204,10 +209,10 @@
 		function drawCircle() {
 			ctx.beginPath();
 			//计算圆心的位置
-			var ox = (endX - startX) / 2 + startX;
-			var oy = (endY - startY) / 2 + startY;
+			var ox = (endX1 - startX) / 2 + startX;
+			var oy = (endY1 - startY) / 2 + startY;
 			//计算半径
-			var r = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)) / 2;
+			var r = Math.sqrt(Math.pow(endX1 - startX, 2) + Math.pow(endY1 - startY, 2)) / 2;
 			ctx.arc(ox, oy, r, 0, 2 * Math.PI);
 			
 			if(flag==1){
@@ -221,11 +226,11 @@
 		//画矩形
 		function drawRect() {
 			if(flag==1){
-				ctx.fillRect(startX, startY, endX - startX, endY - startY);
+				ctx.fillRect(startX, startY, endX1 - startX, endY1 - startY);
 				ctx.fillStyle = drawcolor;
 				ctx.fill();
 			}else{
-				ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+				ctx.strokeRect(startX, startY, endX1 - startX, endY1 - startY);
 				ctx.strokeStyle = drawcolor;
 				ctx.lineWidth=lineWidth;
 				ctx.stroke();
